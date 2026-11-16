@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIFaceDetector — Real vs AI Face Radar</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-glow" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9.4" cy="10.4" r="1.1" fill="currentColor"/><circle cx="14.6" cy="10.4" r="1.1" fill="currentColor"/><path d="M9 15.2c1 .9 2 .9 3 .9s2 0 3-.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 3v18" stroke="currentColor" stroke-width="0.9" stroke-dasharray="2 2" opacity="0.7"/></svg>
+    </span>
+    <div class="brand-text">
+      <strong>AIFaceDetector</strong>
+      <small>REAL vs AI FACE RADAR</small>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill" id="enginePill"><i class="dot dot-warn"></i>booting</span>
+    <span class="pill" id="fpsPill">— fps</span>
+    <span class="pill" id="facesPill">0 faces</span>
+    <span class="pill pill-ai" id="aiPill">0 flagged</span>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn" id="soundBtn" title="Sound on/off (S)">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path id="soundPath" d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path id="soundWaves" d="M16 9c1.2 1 1.2 5 0 6M18.5 7c2.2 2 2.2 8 0 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+    <button class="icon-btn" id="pauseBtn" title="Pause (Space)">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path id="pausePath" d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/></svg>
+    </button>
+    <button class="icon-btn" id="helpBtn" title="Help (?)">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9.2 9a2.9 2.9 0 1 1 4.4 2.5c-1 .6-1.6 1.2-1.6 2.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1.1" fill="currentColor"/><circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+    </button>
+    <a class="gh-link" href="https://github.com/aisac-id/aifacedetector" target="_blank" rel="noopener">GitHub ↗</a>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage-col">
+    <div class="stage" id="stage">
+      <canvas id="view"></canvas>
+      <canvas id="hud"></canvas>
+      <div class="scanbeam" id="scanbeam"></div>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <span class="chip src-chip" id="srcChip">DEMO REEL</span>
+      <span class="chip clock-chip" id="clockChip">00:00:00</span>
+      <span class="chip truth-chip" id="truthChip" hidden></span>
+      <div class="alert-flash" id="alertFlash"></div>
+      <div class="pause-veil" id="pauseVeil" hidden><span>PAUSED</span></div>
+      <div class="src-gate" id="srcGate" hidden>
+        <p id="gateMsg">Source unavailable.</p>
+        <div class="gate-actions">
+          <button class="btn btn-primary" id="gateRetry">Retry</button>
+          <button class="btn" id="gateDemo">Use demo reel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="source-bar">
+      <label class="field">
+        <span>Source</span>
+        <select id="sourceSel">
+          <option value="demo">Demo reel — AI photo + avatar</option>
+          <option value="webcam">Webcam</option>
+          <option value="screen">Screen / meeting tab</option>
+        </select>
+      </label>
+      <label class="field" id="deviceWrap" hidden>
+        <span>Camera</span>
+        <select id="deviceSel"></select>
+      </label>
+      <button class="btn btn-primary" id="captureBtn" hidden>Share tab / screen…</button>
+      <span class="src-status" id="srcStatus">starting…</span>
+      <button class="btn" id="reportBtn" title="Download JSON report">Export report</button>
+    </div>
+
+    <div class="panel log-panel">
+      <div class="panel-head">
+        <h2>Event log</h2>
+        <div class="panel-tools">
+          <select id="logFilter" class="mini-sel">
+            <option value="all">All events</option>
+            <option value="synthetic">Synthetic only</option>
+            <option value="real">Real only</option>
+          </select>
+          <button class="mini-btn" id="clearLogBtn">Clear</button>
+        </div>
+      </div>
+      <ul class="log-list" id="logList"></ul>
+      <p class="empty" id="logEmpty">No events yet — verdict changes land here.</p>
+    </div>
+  </section>
+
+  <aside class="side-col">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Participants</h2>
+        <span class="count" id="partCount">0 in view</span>
+      </div>
+      <ul class="part-list" id="partList"></ul>
+      <p class="empty" id="partEmpty">No faces in view.</p>
+    </div>
+
+    <div class="panel" id="signalPanel">
+      <div class="panel-head">
+        <h2>Signal breakdown</h2>
+        <span class="count" id="sigTarget">select a face</span>
+      </div>
+      <div class="sig-body" id="sigBody" hidden>
+        <div class="dial-row">
+          <svg viewBox="0 0 120 120" width="110" height="110" id="dialSvg">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(90,130,200,0.18)" stroke-width="9"/>
+            <circle id="dialArc" cx="60" cy="60" r="50" fill="none" stroke="#38bdf8" stroke-width="9" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="157" transform="rotate(-90 60 60)"/>
+            <text id="dialScore" x="60" y="57" text-anchor="middle" class="dial-score">—</text>
+            <text id="dialVerdict" x="60" y="76" text-anchor="middle" class="dial-verdict">SCAN</text>
+          </svg>
+          <div class="dial-info">
+            <strong id="sigSubtype">—</strong>
+            <p id="sigAdvice">Collecting samples…</p>
+            <span class="mini-meta" id="sigMeta"></span>
+          </div>
+        </div>
+        <ul class="sig-list" id="sigList"></ul>
+      </div>
+      <p class="empty" id="sigEmpty">Click a participant (or a box) to inspect its five liveness signals.</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Tuning</h2>
+        <button class="mini-btn" id="resetTuneBtn">Reset</button>
+      </div>
+      <div class="tune-grid">
+        <label class="tune">
+          <span>Sensitivity <b id="sensVal">1.00×</b></span>
+          <input type="range" id="sensRange" min="0.6" max="1.4" step="0.05" value="1">
+        </label>
+        <label class="tune">
+          <span>Scan interval <b id="intVal">300 ms</b></span>
+          <input type="range" id="intRange" min="150" max="1000" step="50" value="300">
+        </label>
+        <label class="tune">
+          <span>Min confidence <b id="confVal">0.40</b></span>
+          <input type="range" id="confRange" min="0.1" max="0.9" step="0.05" value="0.4">
+        </label>
+        <label class="tune">
+          <span>Detector size</span>
+          <select id="sizeSel">
+            <option value="224">224 — fast</option>
+            <option value="320" selected>320 — balanced</option>
+            <option value="416">416 — thorough</option>
+          </select>
+        </label>
+        <div class="toggle-row"><span>Verdict labels</span><button class="toggle on" id="labelsTgl" role="switch" aria-checked="true"></button></div>
+        <div class="toggle-row"><span>Landmark dots</span><button class="toggle on" id="dotsTgl" role="switch" aria-checked="true"></button></div>
+        <div class="toggle-row"><span>Mirror view</span><button class="toggle" id="mirrorTgl" role="switch" aria-checked="false"></button></div>
+        <div class="toggle-row"><span>Synthetic alerts</span><button class="toggle on" id="alertTgl" role="switch" aria-checked="true"></button></div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="modal-veil" id="helpModal" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h2>How AIFaceDetector works</h2>
+      <button class="icon-btn" id="helpClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <h3>Scan a meeting (Meet / Zoom / Teams)</h3>
+      <ol>
+        <li>Join your meeting in a normal browser tab.</li>
+        <li>Here, set <b>Source → Screen / meeting tab</b> and press <b>Share tab / screen…</b></li>
+        <li>In Chrome's picker choose the <b>meeting tab</b> (or a window / whole screen).</li>
+        <li>Every participant tile gets its own box: <b class="v-real">REAL</b>, <b class="v-sus">SUSPECT</b> or <b class="v-ai">SYNTHETIC</b>. Click one to see the five signals behind the verdict.</li>
+      </ol>
+      <h3>Scan anything you're browsing</h3>
+      <p>The same screen capture works on any tab — videos, profiles, streams. Or point the <b>webcam</b> source at yourself to see a live human score high.</p>
+      <h3>The five signals</h3>
+      <ul>
+        <li><b>Micro-motion</b> — real faces constantly micro-move; frozen or rigidly-looped faces don't.</li>
+        <li><b>Blink rhythm</b> — eye-aspect-ratio dips; avatars and stills rarely blink naturally.</li>
+        <li><b>Skin micro-texture</b> — generative models over-smooth pores and fine grain.</li>
+        <li><b>Color richness</b> — cel-shaded animation uses far fewer distinct colors.</li>
+        <li><b>Sensor noise</b> — real cameras carry frame-to-frame grain; rendered or static faces don't.</li>
+      </ul>
+      <h3>Honest limits</h3>
+      <p>This is an <b>on-device heuristic triage tool</b>, not a forensic deepfake classifier. Heavy video compression, beauty filters, bad lighting or a very still participant can lower a real person's score; sophisticated real-time deepfakes can pass. Treat <b>SUSPECT</b> as "look closer", never as proof. Everything runs locally — no frame ever leaves your machine.</p>
+      <h3>Shortcuts</h3>
+      <p><kbd>Space</kbd> pause · <kbd>M</kbd> mirror · <kbd>S</kbd> sound · <kbd>?</kbd> help · <kbd>Esc</kbd> close</p>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="vendor/face-api.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

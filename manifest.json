@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "AIFaceDetector — Real vs AI Face Radar",
+  "version": "1.0.0",
+  "description": "Spot AI-generated, animated and static faces in meetings, tabs and webcam feeds — on-device liveness & authenticity radar.",
+  "permissions": ["storage"],
+  "action": { "default_title": "Open AIFaceDetector" },
+  "background": { "service_worker": "background.js" },
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
+}
