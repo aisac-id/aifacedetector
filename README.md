@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="promo/logo.png" alt="AIFaceDetector logo" width="220">
+<picture><source media="(prefers-color-scheme: dark)" srcset="promo/logo-white.png"><img src="promo/logo.png" alt="AIFaceDetector logo" width="220"></picture>
 
 # AIFaceDetector — Real vs AI Face Radar
 
@@ -111,6 +111,7 @@ All assets are AI-generated artwork for this project — free to reuse under the
 | Asset | File |
 | --- | --- |
 | Logo | [`promo/logo.png`](promo/logo.png) |
+| Logo (dark mode) | [`promo/logo-white.png`](promo/logo-white.png) |
 | Software box | [`promo/software-box.png`](promo/software-box.png) |
 | Poster | [`promo/poster.png`](promo/poster.png) |
 | Banner | [`promo/banner.png`](promo/banner.png) |
